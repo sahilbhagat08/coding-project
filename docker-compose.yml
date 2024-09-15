@@ -1,0 +1,35 @@
+version: '3'
+services:
+  # MongoDB service
+  mongodb:
+    image: mongo:4.4
+    container_name: mongodb
+    ports:
+      - "27017:27017"  # Expose MongoDB on port 27017
+    volumes:
+      - mongo-data:/data/db  # Persist MongoDB data
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    networks:
+      - springboot-mongo-network
+
+  # Spring Boot application service
+  springboot-app:
+    build:
+      context: .  # Build from the current directory where Dockerfile is located
+    container_name: springboot-app
+    ports:
+      - "8080:8080"  # Expose Spring Boot app on port 8080
+    depends_on:
+      - mongodb  # Ensure MongoDB is started first
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://root:example@mongodb:27017/availabilitydb?authSource=admin
+    networks:
+      - springboot-mongo-network
+
+volumes:
+  mongo-data:  # Volume for persisting MongoDB data
+
+networks:
+  springboot-mongo-network:  # Shared network for MongoDB and Spring Boot
